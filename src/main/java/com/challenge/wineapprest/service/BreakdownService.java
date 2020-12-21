@@ -16,7 +16,11 @@ public class BreakdownService {
     Map<String, WineLot> lotCodeMap;
 
     public BreakdownResponse findBreakdownForKey(String lotCode, final BreakdownKey key) {
-        List<Breakdown> breakdowns = lotCodeMap.get(lotCode).getComponents().stream().map(c -> new Breakdown(key.apply(c), c.getPercentage())).collect(Collectors.toList());
+        WineLot wineLot = lotCodeMap.get(lotCode);
+        if(wineLot == null) {
+            return null;
+        }
+        List<Breakdown> breakdowns = wineLot.getComponents().stream().map(c -> new Breakdown(key.apply(c), c.getPercentage())).collect(Collectors.toList());
         List<Breakdown> aggregatedBreakdowns = breakdowns.stream().collect(Collectors.groupingBy(Breakdown::getKey))
                 .entrySet().stream().map(e -> new Breakdown(e.getKey(), e.getValue().stream().mapToDouble(Breakdown::getPercentage).sum()))
                 .sorted(Comparator.comparingDouble(Breakdown::getPercentage).reversed())
